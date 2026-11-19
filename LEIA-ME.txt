@@ -1,0 +1,16 @@
+APS em Jogo — quiz ao vivo para os encontros da APS
+=====================================================
+
+Telas:
+  index.html   → celular dos participantes (entram com PIN e nome)
+  host.html    → telão do apresentador (login, saguão, perguntas, placar, pódio)
+  editor.html  → criar e editar quizzes (importa planilha .xlsx)
+
+Para colocar no ar, siga o "Guia de implantação" que veio junto.
+Resumo:
+  1. Criar projeto no Firebase (grátis) → ativar Authentication (Anônimo + E-mail/senha)
+     → criar Firestore (São Paulo) → colar o arquivo firestore.rules nas Regras.
+  2. Colar os dados do Firebase em js/config.js (único arquivo a editar).
+  3. Publicar a pasta no GitHub Pages (ou Netlify).
+
+Trocar o nome do sistema: js/config.js → appName.

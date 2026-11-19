@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor de quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="editor">
+
+<header class="topbar">
+  <div class="logo"><span class="mark">★</span><span data-app-name></span></div>
+  <a class="btn ghost small" href="host.html">← Voltar ao painel</a>
+</header>
+
+<section class="screen ed active" id="s-ed">
+  <div class="qcard">
+    <div class="field"><label for="title">Título do quiz</label>
+      <input class="input" id="title" maxlength="80" placeholder="Ex.: Descobrindo Nossos Tesouros – Mapeio de Ativos"></div>
+    <div class="field" style="margin:0"><label for="desc">Descrição (opcional)</label>
+      <input class="input" id="desc" maxlength="160" placeholder="Para quem é, em qual encontro…"></div>
+  </div>
+
+  <div class="qcard row">
+    <b>Importar perguntas:</b>
+    <label class="btn light small">📄 Planilha Excel (.xlsx)<input type="file" id="xlsxIn" accept=".xlsx,.xls,.csv" hidden></label>
+    <label class="btn light small">⤒ Backup (.json)<input type="file" id="jsonIn" accept=".json" hidden></label>
+    <span class="spacer"></span>
+    <button class="btn light small" id="jsonOut">⤓ Baixar backup (.json)</button>
+  </div>
+
+  <div id="qs" style="display:flex;flex-direction:column;gap:14px"></div>
+
+  <button class="btn blue" id="addBtn" style="align-self:center">+ Adicionar pergunta</button>
+</section>
+
+<div class="savebar">
+  <span class="muted" id="sizeInfo" style="align-self:center"></span>
+  <button class="btn" id="saveBtn">💾 Salvar quiz</button>
+</div>
+
+<script type="module" src="js/editor.js"></script>
+</body>
+</html>

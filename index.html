@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B2B57">
+<title>Jogar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23F4B63A'/%3E%3Cpath d='M12 19s-6-3.7-7.6-7.4C3.3 9 4.8 6 7.7 6c1.7 0 2.8.9 3.5 1.9.7-1 1.8-1.9 3.5-1.9 2.9 0 4.4 3 3.3 5.6C16.4 15.3 12 19 12 19z' fill='%230B2B57'/%3E%3C/svg%3E">
+</head>
+<body class="player">
+
+<!-- Entrar -->
+<section class="screen pwrap center active" id="s-join">
+  <div class="logo" style="font-size:1.8rem"><span class="mark">★</span><span data-app-name></span></div>
+  <form class="card login-card" id="joinForm" autocomplete="off">
+    <div class="field">
+      <label for="pin">PIN do jogo</label>
+      <input class="input pin" id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" required>
+    </div>
+    <div class="field">
+      <label for="nick">Seu nome</label>
+      <input class="input" id="nick" maxlength="24" placeholder="Ex.: Maria – UBS Vila Nova" required>
+    </div>
+    <button class="btn blue big" style="width:100%" id="joinBtn" type="submit">Entrar</button>
+  </form>
+  <div class="muted" style="color:#cfe0f5" data-tagline></div>
+</section>
+
+<!-- Aguardando no saguão -->
+<section class="screen pwrap center" id="s-lobby">
+  <div class="spinner"></div>
+  <h2 style="font-size:2rem">Você entrou!</h2>
+  <div class="pill" id="lobbyName"></div>
+  <p style="max-width:320px">Procure seu nome no telão. O jogo começa em instantes.</p>
+</section>
+
+<!-- Pergunta sendo lida -->
+<section class="screen pwrap" id="s-intro">
+  <div class="pstatus"><span id="introNum"></span><span class="pill" id="introName"></span></div>
+  <div class="feedback wait">
+    <div class="big">Prepare-se!</div>
+    <div class="pq" id="introText" style="max-width:520px"></div>
+  </div>
+</section>
+
+<!-- Responder -->
+<section class="screen pwrap" id="s-question">
+  <div class="pstatus"><span id="qNum"></span><span id="qLeft"></span></div>
+  <div class="ptimer"><i id="qBar"></i></div>
+  <div class="pq" id="qText"></div>
+  <div class="pbtns" id="pbtns"></div>
+</section>
+
+<!-- Resposta enviada / tempo esgotado / resultado -->
+<section class="screen pwrap" id="s-feedback">
+  <div class="pstatus"><span id="fbNum"></span><span class="pill" id="fbName"></span></div>
+  <div class="feedback wait" id="fbBox"></div>
+  <div class="pfoot"><span id="fbRank"></span><span id="fbScore"></span></div>
+</section>
+
+<!-- Fim -->
+<section class="screen pwrap center" id="s-end">
+  <div class="feedback wait" id="endBox"></div>
+</section>
+
+<!-- Mensagens -->
+<section class="screen pwrap center" id="s-msg">
+  <h2 id="msgTitle" style="font-size:1.8rem"></h2>
+  <p id="msgText" style="max-width:340px"></p>
+  <button class="btn light" id="msgBtn">Voltar</button>
+</section>
+
+<script type="module" src="js/player.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+rules_version = '2';
+// Regras de segurança do "APS em Jogo".
+// Cole este texto inteiro em: Firebase → Firestore Database → Regras → Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Apresentador = quem entra com e-mail e senha cadastrados no Firebase.
+    function isHost() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+
+    // Quizzes: só a equipe (apresentadores) lê e edita.
+    match /quizzes/{quizId} {
+      allow read, write: if isHost();
+    }
+
+    match /games/{pin} {
+      // Todo mundo pode ver o andamento do jogo (pergunta atual, placar).
+      allow read: if true;
+      allow create, update, delete: if isHost();
+
+      // Jogadores: cada celular cria só o próprio cadastro.
+      match /players/{uid} {
+        allow read: if isHost() || (request.auth != null && request.auth.uid == uid);
+        allow create: if request.auth != null
+          && request.auth.uid == uid
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 24
+          && get(/databases/$(database)/documents/games/$(pin)).data.state != 'end';
+        allow delete: if isHost();
+      }
+
+      // Respostas: uma por pessoa por pergunta, só enquanto o tempo está correndo.
+      match /answers/{answerId} {
+        allow read: if isHost();
+        allow create: if request.auth != null
+          && answerId == request.auth.uid + '_' + string(request.resource.data.q)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.at == request.time
+          && request.resource.data.choice is int
+          && request.resource.data.choice >= 0
+          && request.resource.data.choice < 4
+          && exists(/databases/$(database)/documents/games/$(pin)/players/$(request.auth.uid))
+          && get(/databases/$(database)/documents/games/$(pin)).data.state == 'question'
+          && get(/databases/$(database)/documents/games/$(pin)).data.qIndex == request.resource.data.q;
+        allow delete: if isHost();
+      }
+    }
+  }
+}
