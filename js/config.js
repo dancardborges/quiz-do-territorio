@@ -15,11 +15,11 @@ export const CONFIG = {
   // Cole aqui os dados do seu projeto Firebase
   // (Firebase → Configurações do projeto → Seus apps → Configuração do SDK)
   firebase: {
-    apiKey: 'COLE_AQUI',
-    authDomain: 'COLE_AQUI',
-    projectId: 'COLE_AQUI',
-    storageBucket: 'COLE_AQUI',
-    messagingSenderId: 'COLE_AQUI',
-    appId: 'COLE_AQUI',
+    apiKey: 'AIzaSyBc2KI_ddFVNc2Kspb3-hL4BY9aVvLowHM',
+    authDomain: 'quiz-do-territorio.firebaseapp.com',
+    projectId: 'quiz-do-territorio',
+    storageBucket: 'quiz-do-territorio.firebasestorage.app',
+    messagingSenderId: '409726597930',
+    appId: '1:409726597930:web:2b919c6b4fd1dd7ac07c53',
   },
 };
