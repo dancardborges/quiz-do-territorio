@@ -1,6 +1,6 @@
 // Editor de quiz
 import { B } from './backend.js';
-import { $, $$, esc, toast, brand, errMsg, COLORS, ICONS } from './ui.js';
+import { $, $$, esc, toast, brand, errMsg, COLORS, ICONS, POINT_LEVELS, parsePoints } from './ui.js';
 
 brand();
 const params = new URLSearchParams(location.search);
@@ -50,9 +50,7 @@ function render() {
         </select>
         <select class="input" data-f="time" title="Tempo">${TIMES.map((t) => `<option value="${t}" ${Number(q.time) === t ? 'selected' : ''}>${t} s</option>`).join('')}</select>
         <select class="input" data-f="points" title="Pontos">
-          <option value="standard" ${q.points === 'standard' ? 'selected' : ''}>Pontos normais</option>
-          <option value="double" ${q.points === 'double' ? 'selected' : ''}>Pontos em dobro</option>
-          <option value="none" ${q.points === 'none' ? 'selected' : ''}>Sem pontos</option>
+          ${POINT_LEVELS.map((p) => `<option value="${p.v}" ${(q.points || 'standard') === p.v ? 'selected' : ''}>${p.label}</option>`).join('')}
         </select>
         <span class="spacer"></span>
         <button class="btn light small" data-a="up" title="Subir">↑</button>
@@ -196,6 +194,36 @@ function loadScript(src) {
   return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
 }
 
+// Modelo de planilha para montar o quiz no Excel
+$('#xlsxModel').addEventListener('click', async () => {
+  try {
+    if (!window.XLSX) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    const X = window.XLSX;
+    const rows = [
+      ['Pergunta', 'Resposta 1', 'Resposta 2', 'Resposta 3', 'Resposta 4', 'Tempo (segundos)', 'Certa (1 a 4)', 'Pontos'],
+      ['O que é um "ativo" para a saúde?', 'Pessoa, lugar ou atividade que ajuda a manter a saúde', 'Um remédio da farmácia', 'Um equipamento do consultório', 'Um paciente crônico', 30, 1, 'normal'],
+      ['A quadra da escola é um ativo de qual grupo?', 'Pessoas', 'Espaços', 'Atividades', '', 20, 2, 'meio'],
+      ['O mapa de ativos é só uma lista de endereços.', 'Verdadeiro', 'Falso', '', '', 20, 2, 'normal'],
+      ['Qual é a grande mensagem do encontro?', 'A saúde se constrói em comunidade', 'Saúde é só remédio', 'Mais formulários', 'O território só traz problemas', 30, 1, 'dobro'],
+    ];
+    const ws = X.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 48 }, { wch: 30 }, { wch: 24 }, { wch: 24 }, { wch: 24 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
+    const help = X.utils.aoa_to_sheet([
+      ['Como preencher'],
+      ['Pergunta: até 120 caracteres.'],
+      ['Respostas: de 2 a 4. Para verdadeiro ou falso, escreva Verdadeiro e Falso.'],
+      ['Tempo: 5, 10, 20, 30, 60, 90 ou 120 segundos.'],
+      ['Certa: o número da resposta certa (1 a 4). Mais de uma certa: 1,3'],
+      ['Pontos (opcional): sem, meio (500), normal (1000), dobro (2000) ou triplo (3000). Em branco = normal.'],
+    ]);
+    help['!cols'] = [{ wch: 100 }];
+    const wb = X.utils.book_new();
+    X.utils.book_append_sheet(wb, ws, 'Perguntas');
+    X.utils.book_append_sheet(wb, help, 'Como preencher');
+    X.writeFile(wb, 'modelo-quiz-do-territorio.xlsx');
+  } catch (e) { toast('Não consegui gerar o modelo: ' + (e.message || e), 6000); }
+});
+
 $('#xlsxIn').addEventListener('change', async (ev) => {
   const f = ev.target.files[0]; ev.target.value = '';
   if (!f) return;
@@ -210,12 +238,15 @@ $('#xlsxIn').addEventListener('change', async (ev) => {
 });
 
 // Aceita o modelo de planilha usado em plataformas de quiz:
-// Pergunta | Resposta 1..4 | Tempo | Resposta(s) certa(s) (ex.: 1 ou 1,3)
+// Pergunta | Resposta 1..4 | Tempo | Resposta(s) certa(s) (ex.: 1 ou 1,3) | Pontos (opcional: normal, meio, dobro, triplo, sem)
 export function parseRows(rows) {
   let h = rows.findIndex((r) => r.some((c) => /^(question|pergunta)/i.test(String(c).trim())));
   let col;
   if (h >= 0) col = rows[h].findIndex((c) => /^(question|pergunta)/i.test(String(c).trim()));
   else { h = 7; col = 1; }
+  // Coluna "Pontos" é opcional: pelo cabeçalho, ou logo depois da coluna da resposta certa.
+  let pCol = h >= 0 && rows[h] ? rows[h].findIndex((c) => /^pontos?|^points?|^valor/i.test(String(c).trim())) : -1;
+  if (pCol < 0) pCol = col + 7;
   const out = [];
   for (const r of rows.slice(h + 1)) {
     const text = String(r[col] ?? '').trim();
@@ -227,7 +258,7 @@ export function parseRows(rows) {
     const correct = String(r[col + 6] ?? '1').split(/[,;\s]+/).map((x) => Number(x) - 1).filter((x) => x >= 0 && x < options.length);
     const tf = options.length === 2 && /^verdadeiro$/i.test(options[0]) && /^falso$/i.test(options[1]);
     out.push({
-      type: tf ? 'tf' : 'quiz', text: text.slice(0, 120), time, points: 'standard', img: '',
+      type: tf ? 'tf' : 'quiz', text: text.slice(0, 120), time, points: parsePoints(r[pCol]), img: '',
       options: tf ? options : [...options.map((o) => o.slice(0, 75)), '', '', ''].slice(0, 4),
       correct: correct.length ? (tf ? [correct[0]] : correct) : [0],
     });

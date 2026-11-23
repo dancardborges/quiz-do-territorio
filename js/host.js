@@ -1,7 +1,7 @@
 // Tela do apresentador (telão)
 import { B } from './backend.js';
 import {
-  $, $$, show, esc, toast, brand, errMsg, COLORS, LETTERS, ICONS, scoreFor, shuffled, fmt, Sound,
+  $, $$, show, esc, toast, brand, errMsg, COLORS, LETTERS, ICONS, scoreFor, pointLevel, shuffled, fmt, Sound,
 } from './ui.js';
 import { EXEMPLO } from './exemplo.js';
 
@@ -210,7 +210,8 @@ async function goIntro(i) {
     time: Number(qq.time) || 20,
     points: qq.points || 'standard',
   };
-  $('#introNum').textContent = qLabel() + (qq.points === 'double' ? ' · PONTOS EM DOBRO ✨' : '');
+  const tag = pointLevel(qq.points).tag;
+  $('#introNum').textContent = qLabel() + (tag ? ' · ' + tag : '');
   $('#introText').textContent = qq.text;
   const bar = $('#introBar');
   bar.style.transition = 'none'; bar.style.width = '0';

@@ -46,10 +46,30 @@ export function errMsg(e) {
   return 'Algo deu errado: ' + m;
 }
 
-// Pontuação: resposta certa vale até 1000 pontos (ou 2000 em dobro);
-// quanto mais rápido, mais pontos (mínimo de 500 / 1000).
+// Pontuação: cada pergunta tem um valor máximo (500, 1000, 2000 ou 3000);
+// quem acerta ganha entre metade e o valor cheio — quanto mais rápido, mais pontos.
+export const POINT_LEVELS = [
+  { v: 'none', label: 'Sem pontos', base: 0, tag: '' },
+  { v: 'half', label: 'Vale 500', base: 500, tag: 'VALE MEIO PONTO' },
+  { v: 'standard', label: 'Vale 1000 (normal)', base: 1000, tag: '' },
+  { v: 'double', label: 'Vale 2000 (dobro)', base: 2000, tag: 'PONTOS EM DOBRO ✨' },
+  { v: 'triple', label: 'Vale 3000 (triplo)', base: 3000, tag: 'PONTOS TRIPLOS 🔥' },
+];
+export const pointLevel = (v) => POINT_LEVELS.find((p) => p.v === v) || POINT_LEVELS[2];
+
+// Lê o que a pessoa escreveu na coluna "Pontos" da planilha.
+export function parsePoints(raw) {
+  const t = String(raw ?? '').trim().toLowerCase();
+  if (!t) return 'standard';
+  if (/^(sem|nenhum|0|não|nao|zero)/.test(t)) return 'none';
+  if (/(tripl|3x|x3|3000)/.test(t)) return 'triple';
+  if (/(dobr|duplo|2x|x2|2000)/.test(t)) return 'double';
+  if (/(meio|metade|500|0,5|0\.5)/.test(t)) return 'half';
+  return 'standard';
+}
+
 export function scoreFor(pointsMode, elapsedMs, limitSec) {
-  const base = pointsMode === 'double' ? 2000 : pointsMode === 'none' ? 0 : 1000;
+  const base = pointLevel(pointsMode).base;
   const frac = Math.min(Math.max(elapsedMs / (limitSec * 1000), 0), 1);
   return Math.round(base * (1 - frac / 2));
 }
