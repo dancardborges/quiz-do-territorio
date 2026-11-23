@@ -1,5 +1,5 @@
 // Ligação com o Firebase (banco de dados em tempo real + login).
-import { CONFIG } from './config.js';
+import { CONFIG } from './config.js?v=6';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
   getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged, signOut,
@@ -124,7 +124,7 @@ const B = {
     const since = Timestamp.fromMillis(Date.now() - 3000);
     return onSnapshot(query(collection(db, 'games', pin, 'reactions'), where('at', '>', since)), (s) => {
       s.docChanges().forEach((c) => { if (c.type === 'added') { const x = c.doc.data(); cb({ uid: x.uid, e: x.e }); } });
-    }, () => {});
+    }, (err) => console.warn('[reações] não consegui escutar:', err && (err.code || err.message)));
   },
   async kickPlayer(pin, uid) { await deleteDoc(doc(db, 'games', pin, 'players', uid)); },
 

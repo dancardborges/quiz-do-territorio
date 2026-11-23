@@ -1,7 +1,7 @@
 // Tela do celular (jogador)
-import { B } from './backend.js';
-import { $, show, esc, toast, brand, errMsg, COLORS, LETTERS, ICONS, rankOf, fmt } from './ui.js';
-import { REACOES, figEmoji, figValid, randomFig, figPicker } from './figurinhas.js';
+import { B } from './backend.js?v=6';
+import { $, show, esc, toast, brand, errMsg, COLORS, LETTERS, ICONS, rankOf, fmt } from './ui.js?v=6';
+import { REACOES, figEmoji, figValid, randomFig, figPicker } from './figurinhas.js?v=6';
 
 brand();
 const params = new URLSearchParams(location.search);

@@ -1,6 +1,6 @@
 // Editor de quiz
-import { B } from './backend.js';
-import { $, $$, esc, toast, brand, errMsg, COLORS, ICONS, POINT_LEVELS, parsePoints } from './ui.js';
+import { B } from './backend.js?v=6';
+import { $, $$, esc, toast, brand, errMsg, COLORS, ICONS, POINT_LEVELS, parsePoints } from './ui.js?v=6';
 
 brand();
 const params = new URLSearchParams(location.search);

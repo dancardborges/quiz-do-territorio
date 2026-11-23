@@ -1,5 +1,5 @@
 // Utilidades compartilhadas: cores, ícones, sons, pontuação.
-import { CONFIG } from './config.js';
+import { CONFIG } from './config.js?v=6';
 
 export const COLORS = ['#E0533D', '#11967F', '#E39414', '#4C5BD4'];
 export const LETTERS = ['A', 'B', 'C', 'D'];
