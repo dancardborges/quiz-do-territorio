@@ -6,7 +6,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
   initializeFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  collection, query, where, onSnapshot, serverTimestamp,
+  collection, query, where, onSnapshot, serverTimestamp, Timestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 let app, auth, db;
@@ -95,21 +95,36 @@ const B = {
   },
 
   // ---------- jogadores ----------
-  async joinGame(pin, name) {
+  async joinGame(pin, name, avatar) {
     const uid = await B.playerSignIn();
     const ref = doc(db, 'games', pin, 'players', uid);
     const s = await getDoc(ref);
-    if (!s.exists()) await setDoc(ref, { name, joinedAt: serverTimestamp() });
-    return { uid, name: s.exists() ? s.data().name : name };
+    if (!s.exists()) await setDoc(ref, { name, avatar: avatar || '', joinedAt: serverTimestamp() });
+    const d = s.exists() ? s.data() : { name, avatar };
+    return { uid, name: d.name, avatar: d.avatar || '' };
   },
   async amIIn(pin) {
     const uid = await B.playerSignIn();
     const s = await getDoc(doc(db, 'games', pin, 'players', uid));
-    return s.exists() ? { uid, name: s.data().name } : null;
+    return s.exists() ? { uid, name: s.data().name, avatar: s.data().avatar || '' } : null;
+  },
+  async setAvatar(pin, avatar) {
+    await updateDoc(doc(db, 'games', pin, 'players', auth.currentUser.uid), { avatar });
   },
   watchPlayers(pin, cb) {
     return onSnapshot(collection(db, 'games', pin, 'players'),
-      (s) => cb(s.docs.map((d) => ({ uid: d.id, name: d.data().name }))));
+      (s) => cb(s.docs.map((d) => ({ uid: d.id, name: d.data().name, avatar: d.data().avatar || '' }))));
+  },
+
+  // ---------- reações ----------
+  async sendReaction(pin, e) {
+    await addDoc(collection(db, 'games', pin, 'reactions'), { uid: auth.currentUser.uid, e, at: serverTimestamp() });
+  },
+  watchReactions(pin, cb) {
+    const since = Timestamp.fromMillis(Date.now() - 3000);
+    return onSnapshot(query(collection(db, 'games', pin, 'reactions'), where('at', '>', since)), (s) => {
+      s.docChanges().forEach((c) => { if (c.type === 'added') { const x = c.doc.data(); cb({ uid: x.uid, e: x.e }); } });
+    }, () => {});
   },
   async kickPlayer(pin, uid) { await deleteDoc(doc(db, 'games', pin, 'players', uid)); },
 

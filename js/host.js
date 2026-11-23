@@ -4,6 +4,7 @@ import {
   $, $$, show, esc, toast, brand, errMsg, COLORS, LETTERS, ICONS, scoreFor, pointLevel, shuffled, fmt, Sound,
 } from './ui.js';
 import { EXEMPLO } from './exemplo.js';
+import { figEmoji } from './figurinhas.js';
 
 brand();
 const params = new URLSearchParams(location.search);
@@ -11,6 +12,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let pin = null, quiz = null, board = {}, state = 'none';
 let players = new Map();      // uid -> nome
+let avatars = new Map();      // uid -> figurinha
+let unR = null, rPin = null;  // escuta das reações
 let answers = new Map();      // uid -> {choice, at}
 let unP = null, unA = null, timerH = null, introH = null;
 let cur = null;               // {i, qq, ord, disp, correct}
@@ -147,11 +150,31 @@ function openLobby() {
   Sound.lobby(opts.music);
 }
 
+// Reações que sobem pelo telão
+function watchReactions() {
+  if (unR) unR();
+  rPin = pin;
+  unR = B.watchReactions(pin, (r) => {
+    if (state === 'question' || state === 'closing' || state === 'intro') return;
+    const layer = $('#reactLayer');
+    if (!layer || layer.childElementCount > 40) return;
+    const el = document.createElement('div');
+    el.className = 'floatr';
+    el.style.left = (4 + Math.random() * 88) + '%';
+    el.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+    el.innerHTML = `<span class="who">${figEmoji(avatars.get(r.uid))}</span><span>${esc(r.e)}</span>`;
+    layer.appendChild(el);
+    setTimeout(() => el.remove(), 3300);
+  });
+}
+
 function watchPlayers() {
+  if (!unR || rPin !== pin) watchReactions();
   if (unP) unP();
   unP = B.watchPlayers(pin, (list) => {
     const before = players.size;
     players = new Map(list.map((p) => [p.uid, p.name]));
+    avatars = new Map(list.map((p) => [p.uid, p.avatar]));
     // quem foi removido sai do placar também
     for (const uid of Object.keys(board)) if (!players.has(uid)) delete board[uid];
     if (players.size > before && state === 'lobby') Sound.pop();
@@ -165,10 +188,10 @@ function renderChips() {
   $('#startBtn').disabled = players.size === 0;
   const box = $('#chips');
   box.classList.toggle('many', players.size > 40);
-  box.innerHTML = [...players].map(([uid, n]) => `<button class="chip" data-uid="${uid}" title="Remover">${esc(n)}</button>`).join('');
+  box.innerHTML = [...players].map(([uid, n]) => `<button class="chip" data-uid="${uid}" data-name="${esc(n)}" title="Remover"><span class="chipfig">${figEmoji(avatars.get(uid))}</span>${esc(n)}</button>`).join('');
   $$('.chip', box).forEach((c) => {
     c.onclick = async () => {
-      if (!confirm(`Remover "${c.textContent}" do jogo?`)) return;
+      if (!confirm(`Remover "${c.dataset.name}" do jogo?`)) return;
       try { await B.kickPlayer(pin, c.dataset.uid); } catch (e) { toast(errMsg(e)); }
     };
   });
@@ -276,6 +299,7 @@ async function closeQuestion() {
   for (const [uid, name] of players) {
     const e = board[uid] || { n: name, s: 0, a: '' };
     e.n = name;
+    e.f = avatars.get(uid) || e.f || '';
     e.a = (e.a || '').padEnd(i, '-').slice(0, i);
     const a = answers.get(uid);
     let pts = 0, mark = '-';
@@ -322,7 +346,7 @@ function renderBoard() {
   state = 'board';
   const top = ranking().slice(0, 5);
   $('#board').innerHTML = top.length ? top.map(([, e], k) => `
-    <div class="brow"><span class="pos">${k + 1}º</span><span>${esc(e.n)}</span>
+    <div class="brow"><span class="pos">${k + 1}º</span><span>${figEmoji(e.f)} ${esc(e.n)}</span>
     <span class="delta">${e.d ? '+' + fmt(e.d) : ''}</span><span>${fmt(e.s)}</span></div>`).join('')
     : '<div class="card">Ninguém pontuou ainda.</div>';
   const last = cur.i + 1 >= quiz.questions.length;
@@ -341,6 +365,7 @@ async function goEnd() {
   if (unA) unA();
   if (unP) unP();
   renderPodium();
+  setTimeout(() => { if (unR) { unR(); unR = null; } }, 120000); // reações no pódio por 2 minutos
 }
 
 function renderPodium() {
@@ -348,7 +373,7 @@ function renderPodium() {
   const r = ranking();
   const slot = (k, cls) => {
     const e = r[k] && r[k][1];
-    return `<div class="step ${cls}"><div class="who">${e ? esc(e.n) : ''}<div class="pts">${e ? fmt(e.s) + ' pts' : ''}</div></div>
+    return `<div class="step ${cls}"><div class="who">${e ? `<div class="podfig">${figEmoji(e.f)}</div>${esc(e.n)}` : ''}<div class="pts">${e ? fmt(e.s) + ' pts' : ''}</div></div>
       <div class="block">${k + 1}º</div></div>`;
   };
   $('#podTitle').textContent = quiz && quiz.title ? quiz.title : 'Pódio';

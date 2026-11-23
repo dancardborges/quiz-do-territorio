@@ -1,6 +1,7 @@
 // Tela do celular (jogador)
 import { B } from './backend.js';
 import { $, show, esc, toast, brand, errMsg, COLORS, LETTERS, ICONS, rankOf, fmt } from './ui.js';
+import { REACOES, figEmoji, figValid, randomFig, figPicker } from './figurinhas.js';
 
 brand();
 const params = new URLSearchParams(location.search);
@@ -9,7 +10,8 @@ let pin = null, me = null, unsub = null, G = null;
 let renderedQ = -1, deadline = 0, timerH = null;
 const answered = {}; // qIndex -> escolha
 
-function saveSession() { try { localStorage.setItem(KEY, JSON.stringify({ pin, name: me && me.name })); } catch {} }
+let pick = null;
+function saveSession() { try { localStorage.setItem(KEY, JSON.stringify({ pin, name: me && me.name, fig: pick })); } catch {} }
 function loadSession() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } }
 function clearSession() { try { localStorage.removeItem(KEY); } catch {} }
 
@@ -28,6 +30,8 @@ async function start() {
   if (params.get('pin')) $('#pin').value = params.get('pin').replace(/\D/g, '').slice(0, 6);
   const s = loadSession();
   if (s && s.name) $('#nick').value = s.name;
+  pick = s && figValid(s.fig) ? s.fig : randomFig();
+  renderPicker('#figPick');
 
   // Volta automaticamente para o jogo se a página for recarregada
   if (s && s.pin && (!params.get('pin') || params.get('pin') === s.pin)) {
@@ -55,7 +59,7 @@ $('#joinForm').addEventListener('submit', async (ev) => {
     if (!g) { toast('PIN não encontrado. Confira o número no telão.'); return; }
     if (g.state === 'end') { toast('Este jogo já terminou.'); return; }
     pin = p;
-    me = await B.joinGame(p, name);
+    me = await B.joinGame(p, name, pick);
     saveSession();
     enter();
   } catch (e) { toast(errMsg(e)); }
@@ -72,8 +76,45 @@ function enter() {
 }
 
 function setNames() {
-  ['#lobbyName', '#introName', '#fbName'].forEach((s) => { $(s).textContent = me.name; });
+  ['#lobbyName', '#introName', '#fbName'].forEach((s) => { $(s).textContent = `${figEmoji(me.avatar)} ${me.name}`; });
+  $('#lobbyFig').textContent = figEmoji(me.avatar);
 }
+
+// ---- figurinhas ----
+function renderPicker(sel) {
+  const box = $(sel);
+  box.innerHTML = figPicker(sel === '#figPick' ? pick : me && me.avatar);
+  box.onclick = async (ev) => {
+    const b = ev.target.closest('[data-fig]'); if (!b) return;
+    box.querySelectorAll('.fig').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+    pick = b.dataset.fig;
+    if (sel === '#figPick2' && me && pin) {
+      try { await B.setAvatar(pin, pick); me.avatar = pick; saveSession(); setNames(); $('#figSheet').hidden = true; }
+      catch (e) { toast('Só dá para trocar antes do jogo começar.'); $('#figSheet').hidden = true; }
+    }
+  };
+}
+$('#swapFig').onclick = () => { renderPicker('#figPick2'); $('#figSheet').hidden = false; };
+$('#figClose').onclick = () => { $('#figSheet').hidden = true; };
+
+// ---- reações (aparecem no telão) ----
+document.querySelectorAll('[data-react]').forEach((bar) => {
+  bar.innerHTML = `<div class="reactlabel">Mande uma reação para o telão</div><div class="reacts">${
+    REACOES.map((e) => `<button type="button" class="reactbtn" data-e="${e}" aria-label="Reagir ${e}">${e}</button>`).join('')}</div>`;
+});
+let lastReact = 0, reactCount = 0, reactPhase = '';
+document.addEventListener('click', (ev) => {
+  const b = ev.target.closest('.reactbtn'); if (!b || !pin || !me) return;
+  const phase = G ? G.state + ':' + G.qIndex : '';
+  if (phase !== reactPhase) { reactPhase = phase; reactCount = 0; }
+  const now = Date.now();
+  if (now - lastReact < 900 || reactCount >= 15) return; // evita excesso de envios
+  lastReact = now; reactCount++;
+  b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 200);
+  if (navigator.vibrate) navigator.vibrate(15);
+  B.sendReaction(pin, b.dataset.e).catch(() => {});
+});
+function showReacts(on) { document.querySelectorAll('[data-react]').forEach((x) => { x.hidden = !on; }); }
 
 function myEntry() { return (G.board || {})[me.uid] || null; }
 function footer() {
@@ -88,6 +129,8 @@ function render() {
   setNames();
   clearInterval(timerH);
   const st = G.state;
+  showReacts(st === 'lobby' || st === 'reveal' || st === 'board' || st === 'end');
+  if (st !== 'lobby') $('#figSheet').hidden = true;
   if (st === 'lobby') { show('s-lobby'); return; }
   if (st === 'end') { renderEnd(); return; }
   if (st === 'intro') {

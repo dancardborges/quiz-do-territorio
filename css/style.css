@@ -254,3 +254,37 @@ body.editor #toast { bottom: 90px; }
   .opts { grid-template-columns: 1fr; }
   .brow { font-size: 1.1rem; }
 }
+
+/* ---------- Figurinhas ---------- */
+.figgroup { display: grid; gap: 6px; margin-bottom: 10px; }
+.figlabel { font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .7; text-align: left; }
+.figgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.fig { aspect-ratio: 1; border: 3px solid transparent; border-radius: 14px; background: rgba(11,43,87,.08); font-size: 1.6rem; display: grid; place-items: center; padding: 0; cursor: pointer; transition: transform .1s; }
+.fig:hover { transform: scale(1.06); }
+.fig.on { border-color: var(--gold); background: #FFF4DA; transform: scale(1.08); }
+.sheet .fig { background: rgba(255,255,255,.12); }
+.sheet .fig.on { background: rgba(244,182,58,.25); }
+.mefig { font-size: 4.5rem; line-height: 1; width: 1.6em; height: 1.6em; display: grid; place-items: center; background: #fff; border-radius: 50%; box-shadow: 0 0 0 6px rgba(244,182,58,.6); }
+.chipfig { margin-right: .4em; }
+.podfig { font-size: 2.6rem; line-height: 1.1; }
+.sheet { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: flex-end; z-index: 40; }
+.sheet[hidden] { display: none; }
+.sheet-in { width: 100%; max-height: 88vh; overflow: auto; background: #0B2B57; color: #fff; border-radius: 22px 22px 0 0; padding: 18px max(16px, env(safe-area-inset-left, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px; }
+.sheet-in .figlabel { color: #cfe0f5; }
+
+/* ---------- Reações ---------- */
+.reactbar { width: 100%; display: grid; gap: 8px; margin-top: 12px; }
+.reactbar[hidden] { display: none; }
+.reactlabel { font-size: .8rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; opacity: .75; text-align: center; }
+.reacts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.reactbtn { width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); font-size: 1.6rem; display: grid; place-items: center; padding: 0; cursor: pointer; transition: transform .1s; }
+.reactbtn.hit, .reactbtn:active { transform: scale(1.25); background: rgba(255,255,255,.3); }
+#reactLayer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 30; }
+.floatr { position: absolute; bottom: -70px; display: flex; align-items: center; gap: 2px; font-size: 2.8rem; animation: floatUp 3.2s cubic-bezier(.2,.6,.3,1) forwards; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+.floatr .who { font-size: 1.3rem; background: #fff; border-radius: 50%; width: 1.8em; height: 1.8em; display: grid; place-items: center; }
+@keyframes floatUp {
+  0% { transform: translate(0, 0) scale(.6); opacity: 0; }
+  12% { opacity: 1; transform: translate(0, -10vh) scale(1); }
+  100% { transform: translate(var(--dx), -95vh) scale(1.1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .floatr { animation: none; display: none; } }
