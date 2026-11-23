@@ -1,5 +1,5 @@
 // Ligação com o Firebase (banco de dados em tempo real + login).
-import { CONFIG } from './config.js?v=6';
+import { CONFIG } from './config.js?v=7';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
   getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged, signOut,

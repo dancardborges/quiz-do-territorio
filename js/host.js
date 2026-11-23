@@ -1,10 +1,10 @@
 // Tela do apresentador (telão)
-import { B } from './backend.js?v=6';
+import { B } from './backend.js?v=7';
 import {
   $, $$, show, esc, toast, brand, errMsg, COLORS, LETTERS, ICONS, scoreFor, pointLevel, shuffled, fmt, Sound,
-} from './ui.js?v=6';
-import { EXEMPLO } from './exemplo.js?v=6';
-import { figEmoji } from './figurinhas.js?v=6';
+} from './ui.js?v=7';
+import { EXEMPLO } from './exemplo.js?v=7';
+import { figEmoji } from './figurinhas.js?v=7';
 
 brand();
 const params = new URLSearchParams(location.search);

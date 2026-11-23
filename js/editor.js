@@ -1,6 +1,6 @@
 // Editor de quiz
-import { B } from './backend.js?v=6';
-import { $, $$, esc, toast, brand, errMsg, COLORS, ICONS, POINT_LEVELS, parsePoints } from './ui.js?v=6';
+import { B } from './backend.js?v=7';
+import { $, $$, esc, toast, brand, errMsg, COLORS, ICONS, POINT_LEVELS, parsePoints } from './ui.js?v=7';
 
 brand();
 const params = new URLSearchParams(location.search);
@@ -10,6 +10,18 @@ let dirty = false;
 
 const TIMES = [5, 10, 20, 30, 60, 90, 120];
 const blank = () => ({ type: 'quiz', text: '', options: ['', '', '', ''], correct: [0], time: 20, points: 'standard', img: '' });
+
+// Aplicar tempo e/ou pontos a todas as perguntas de uma vez
+$('#bulkPoints').insertAdjacentHTML('beforeend', POINT_LEVELS.map((p) => `<option value="${p.v}">${p.label}</option>`).join(''));
+$('#bulkApply').addEventListener('click', () => {
+  const t = $('#bulkTime').value, p = $('#bulkPoints').value;
+  if (!t && !p) { toast('Escolha o tempo e/ou os pontos para aplicar.'); return; }
+  qs.forEach((q) => { if (t) q.time = Number(t); if (p) q.points = p; });
+  touch(); render();
+  const parts = [t && `${t} segundos`, p && POINT_LEVELS.find((x) => x.v === p).label.toLowerCase()].filter(Boolean).join(' e ');
+  toast(`Pronto: ${qs.length} pergunta(s) com ${parts}. Não esqueça de salvar.`);
+  $('#bulkTime').value = ''; $('#bulkPoints').value = '';
+});
 
 window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 const touch = () => { dirty = true; sizeInfo(); };
