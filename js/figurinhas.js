@@ -25,7 +25,7 @@ export const FIGURINHAS = [
   { id: 'forca', e: '💪', nome: 'Força', g: 'Vida saudável' },
   { id: 'parceria', e: '🤝', nome: 'Parceria', g: 'Vida saudável' },
 ];
-export const REACOES = ['👏', '❤️', '😂', '😮', '🔥', '🙌'];
+export const REACOES = ['👏', '❤️', '😂', '😳', '😮', '🔥', '🙌'];
 const BY = Object.fromEntries(FIGURINHAS.map((f) => [f.id, f]));
 export const figEmoji = (id) => (BY[id] ? BY[id].e : '🙂');
 export const figValid = (id) => !!BY[id];

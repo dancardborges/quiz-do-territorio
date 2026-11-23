@@ -277,7 +277,7 @@ body.editor #toast { bottom: 90px; }
 .reactbar[hidden] { display: none; }
 .reactlabel { font-size: .8rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; opacity: .75; text-align: center; }
 .reacts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.reactbtn { width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); font-size: 1.6rem; display: grid; place-items: center; padding: 0; cursor: pointer; transition: transform .1s; }
+.reactbtn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); font-size: 1.6rem; display: grid; place-items: center; padding: 0; cursor: pointer; transition: transform .1s; }
 .reactbtn.hit, .reactbtn:active { transform: scale(1.25); background: rgba(255,255,255,.3); }
 #reactLayer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 30; }
 .floatr { position: absolute; bottom: -70px; display: flex; align-items: center; gap: 2px; font-size: 2.8rem; animation: floatUp 3.2s cubic-bezier(.2,.6,.3,1) forwards; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }

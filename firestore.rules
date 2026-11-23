@@ -47,7 +47,8 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['uid', 'e', 'at'])
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.at == request.time
-          && request.resource.data.e in ['👏', '❤️', '😂', '😮', '🔥', '🙌']
+          && request.resource.data.e is string
+          && request.resource.data.e.size() <= 8
           && exists(/databases/$(database)/documents/games/$(pin)/players/$(request.auth.uid))
           && get(/databases/$(database)/documents/games/$(pin)).data.state in ['lobby', 'reveal', 'board', 'end'];
       }
